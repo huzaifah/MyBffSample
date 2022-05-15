@@ -14,6 +14,8 @@
         }
     </dl>
     <div>
+        <a href="~/api/values">Call Api</a>
+        <br />
         <a href="~/bff/logout?sid=@User.Claims.First(c => c.Type is "sid").Value">Logout</a>
     </div>
 }
@@ -21,6 +23,8 @@ else
 {
     <h2>User is not logged in.</h2>
     <div>
+        <a href="~/api/values">Call Api</a>
+        <br />
         <a href="~/bff/login">Login</a>
     </div>
 }
