@@ -1,0 +1,26 @@
+﻿@{
+    ViewData["Title"] = "Backend for FrontEnd Test Page";
+}
+
+<h1>Backend for FrontEnd Test Page</h1>
+
+@if (User.Identity!.IsAuthenticated)
+{
+    <dl>
+        @foreach (var claim in User.Claims)
+        {
+            <dt>@claim.Type</dt>
+            <dd>@claim.Value</dd>
+        }
+    </dl>
+    <div>
+        <a href="~/bff/logout?sid=@User.Claims.First(c => c.Type is "sid").Value">Logout</a>
+    </div>
+}
+else
+{
+    <h2>User is not logged in.</h2>
+    <div>
+        <a href="~/bff/login">Login</a>
+    </div>
+}
