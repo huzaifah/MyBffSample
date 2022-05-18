@@ -6,6 +6,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MyBffSample
 {
@@ -33,6 +36,15 @@ namespace MyBffSample
                     options.DefaultScheme = "cookie";
                     options.DefaultChallengeScheme = "oidc";
                     options.DefaultSignOutScheme = "oidc";
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.RequireHttpsMetadata = false;
+                    options.Authority = "https://localhost:5001";
+                    options.TokenValidationParameters.ValidateAudience = false;
+
+                    // it's recommended to check the type header to avoid "JWT confusion" attacks
+                    options.TokenValidationParameters.ValidTypes = new[] { "at+jwt" };
                 })
                 .AddCookie("cookie", options =>
                 {
@@ -62,7 +74,10 @@ namespace MyBffSample
                     options.Scope.Clear();
                     options.Scope.Add("openid");
                     options.Scope.Add("profile");
+                    options.Scope.Add("advisory_access");
                     options.Scope.Add("offline_access");
+
+                    options.ClaimActions.MapUniqueJsonKey("scope", "scope");
 
                     options.TokenValidationParameters = new()
                     {
@@ -70,6 +85,14 @@ namespace MyBffSample
                         RoleClaimType = "role"
                     };
                 });
+
+            services.AddAuthorization(options =>
+            {
+                AuthorizationPolicyBuilder authorizationPolicyBuilder =
+                    new("oidc", JwtBearerDefaults.AuthenticationScheme);
+                authorizationPolicyBuilder = authorizationPolicyBuilder.RequireAuthenticatedUser();
+                options.DefaultPolicy = authorizationPolicyBuilder.Build();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
